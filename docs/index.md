@@ -1,39 +1,84 @@
 ---
-title: Zammad Helpdesk — Overview
-audience: technical
-last_reviewed: 2026-07-26
+owner: group:default/dto
+last_reviewed: 2026-11-17
 ---
 
-# Zammad Helpdesk
+# Zammad Helpdesk (AGM)
 
-This repository is AGM's fork of the upstream [zammad/zammad](https://github.com/zammad/zammad)
-open-source helpdesk and customer support platform. It is kept as a **vanilla
-mirror** — dependency updates are applied automatically via `updatecli`, and
-AGM carries no local code patches on top of upstream `develop`. The purpose
-of the fork is provenance and CI/build control, not customization.
+## What it does
 
-The AGM-specific behavior (integrations, configuration, deployment) lives
-outside this codebase, documented here.
+Zammad is AGM's customer helpdesk. Customer requests that arrive by email, by
+phone and through the web become tickets that agents can track, assign and
+answer.
 
-## What this covers
+This repository is AGM's fork of the open-source
+[zammad/zammad](https://github.com/zammad/zammad) project. **It is not a vanilla
+mirror.** AGM carries its own changes on top of upstream:
 
-- [Deployment](deployment.md) — where and how AGM runs Zammad, and the
-  configuration this deployment overrides relative to upstream defaults.
-- [3CX Integration](3cx-integration.md) — how call events from 3CX phone
-  system reach Zammad as CTI tickets, via the companion
-  [3cx-zammad-bridge](https://github.com/AGM-One-Vision/3cx-zammad-bridge)
-  service.
+- extra formatting actions (highlight, text alignment, text colour) in both
+  ticket editors;
+- a fix to the Docker build so the frontend assets are compiled;
+- a fix to the "Download" link in the Reporting view.
 
-## Where to look for everything else
+Production runs a hand-built image (`zammad-agm`) built from the AGM branch
+`feature/editor-highlight-textalign`. That branch is an upstream `develop`
+snapshot of 2026-04-29 (version `7.1.x`) plus the AGM commits. The default
+branch `develop` is **not** what runs in production, and it is not kept in sync
+with upstream (as of 2026-11-17 it is about 1,860 commits behind upstream
+`develop`).
 
-Zammad's general user/admin documentation (agent workflows, triggers, SLAs,
-channel setup, REST API reference) is upstream, not duplicated here:
+The full list of changes, with branches, commits and upstream status, is in
+[Reference → AGM changes](reference.md#agm-changes).
 
-- [docs.zammad.org](https://docs.zammad.org) — installation & admin manual
-- [REST API reference](https://docs.zammad.org/en/latest/api/intro.html)
-- [Developer manual](https://github.com/zammad/zammad/blob/develop/doc/developer_manual/index.md)
+Phone tickets come from a separate AGM service,
+[3cx-zammad-bridge](https://github.com/AGM-One-Vision/3cx-zammad-bridge), which
+runs on the same server. See [Architecture](architecture.md).
 
-## System
+## Who uses it
 
-Registered in DevHub under the [`zammad` System](https://devhub.agmegypt.com/catalog/default/system/zammad),
-owned by the DTO group, alongside the `3cx-zammad-bridge` component.
+- Customer-service agents across AGM. London Cab is the main user.
+- Customers, indirectly: by email and phone, which become tickets.
+- The 3cx-zammad-bridge service, which calls the Zammad API to create phone
+  tickets.
+
+TODO(owner): list any other systems that call the Zammad API (the service
+catalog audit could not see other callers).
+
+## Business owner
+
+London Cab (`group:default/london-cab`), as recorded in the AGM service catalog
+(`agm-service-catalog/services/zammad.yaml`). The catalog flags this as open:
+Zammad serves the whole company, but London Cab is the main user.
+
+TODO(owner): confirm whether the business owner is London Cab or a company-wide
+owner.
+
+## PM
+
+None. The service catalog records "PM: none".
+
+## Links
+
+| What | Link |
+|---|---|
+| Production (only environment) | <https://helpdesk.agmegypt.com> |
+| Development / staging | Not applicable: there is no dev or staging environment (see [Deploy & operate](deploy-operate.md#environments)). |
+| Source (AGM fork) | <https://github.com/AGM-One-Vision/zammad> |
+| Branch that production is built from | [`feature/editor-highlight-textalign`](https://github.com/AGM-One-Vision/zammad/tree/feature/editor-highlight-textalign) |
+| Upstream project | <https://github.com/zammad/zammad> |
+| DevHub component | <https://devhub.agmegypt.com/catalog/default/component/zammad> |
+| DevHub system | <https://devhub.agmegypt.com/catalog/default/system/zammad> |
+| Service catalog audit (2026-11-09) | <https://github.com/AGM-One-Vision/agm-service-catalog/blob/main/docs/audits/zammad.md> |
+| Phone bridge | <https://github.com/AGM-One-Vision/3cx-zammad-bridge> |
+| Upstream admin and user manual | <https://docs.zammad.org> |
+| Upstream REST API reference | <https://docs.zammad.org/en/latest/api/intro.html> |
+
+The earlier version of `catalog-info.yaml` linked `https://zammad.agmegypt.com`.
+Terraform (the load balancer host rule and `ZAMMAD_FQDN`) and the service
+catalog use `helpdesk.agmegypt.com`. The old name is still linked in
+`devhub-catalog/systems/zammad.yaml`,
+`agm-infra-notes/catalogs/zammad/catalog-info.yaml`, and in
+`3cx-zammad-bridge` (`catalog-info.yaml` and `docs/index.md` on `main`).
+
+TODO(owner): is `zammad.agmegypt.com` an alias of the helpdesk, or a stale name
+that can be removed from those files?
