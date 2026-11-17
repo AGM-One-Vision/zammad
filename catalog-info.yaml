@@ -4,11 +4,16 @@ metadata:
   name: zammad
   title: Zammad Helpdesk
   description: >-
-    AGM's helpdesk/customer support ticketing system. Fork of the upstream
-    zammad/zammad open-source project (kept as a vanilla, unmodified mirror
-    via automated updatecli dependency bumps — no AGM-specific code changes).
-    Handles email, chat, and CTI-driven ticketing; the CTI channel is fed by
-    the 3cx-zammad-bridge daemon, which forwards call events from 3CX.
+    AGM's helpdesk/customer support ticketing system (helpdesk.agmegypt.com).
+    Fork of the upstream zammad/zammad open-source project WITH AGM changes:
+    production runs a hand-built image (zammad-agm) from the AGM branch
+    feature/editor-highlight-textalign, which adds Highlight, TextAlign and
+    colour actions to the ticket editors, a Docker build fix and a report
+    download URL fix on top of an upstream develop snapshot of 2026-04-29.
+    The default branch (develop) is not deployed and is not kept in sync
+    with upstream. Handles email, phone (CTI) and web ticketing; the phone
+    channel is fed by the 3cx-zammad-bridge daemon. See docs/reference.md
+    "AGM changes".
   tags:
     - ruby
     - rails
@@ -16,7 +21,7 @@ metadata:
     - ticketing
     - customer-support
   links:
-    - url: https://zammad.agmegypt.com
+    - url: https://helpdesk.agmegypt.com
       title: Zammad (live instance)
       icon: dashboard
     - url: https://docs.zammad.org
@@ -39,3 +44,5 @@ spec:
   lifecycle: production
   owner: group:default/dto
   system: system:default/zammad
+  providesApis:
+    - zammad-api

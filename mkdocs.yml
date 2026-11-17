@@ -1,7 +1,22 @@
 site_name: Zammad Helpdesk (AGM)
+site_description: AGM's fork of Zammad, the helpdesk behind helpdesk.agmegypt.com, with the AGM changes and how to run, deploy and upgrade it.
+repo_url: https://github.com/AGM-One-Vision/zammad
+edit_uri: edit/develop/docs/
+docs_dir: docs
+
 nav:
   - Overview: index.md
-  - Deployment: deployment.md
-  - 3CX Integration: 3cx-integration.md
+  - Run locally: run-locally.md
+  - Architecture: architecture.md
+  - Deploy & operate: deploy-operate.md
+  - Reference: reference.md
+
 plugins:
   - techdocs-core
+
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
