@@ -1,0 +1,66 @@
+# Build this repo's TechDocs (docs/ + mkdocs.yml) and publish them to DevHub (agm-backstage-v2-techdocs, the
+# external-builder pattern: DevHub reads pre-built docs from S3).
+# Role: gh-bsv2-docs-zammad (agm-infrastructure backstage-v2-techdocs.tf, #257): it trusts THIS repo's
+#   develop branch only and may write only default/component/zammad/*. Until #257 is applied the
+#   "configure AWS credentials" step fails with an unknown-role error.
+# Cadence: every push to develop that touches the docs, or by hand (Actions → Run workflow).
+name: TechDocs · build & publish to DevHub
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/techdocs-devhub.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  id-token: write # OIDC → the publisher role
+
+concurrency:
+  group: techdocs-devhub
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install TechDocs CLI + MkDocs
+        run: |
+          npm install -g @techdocs/cli
+          # techdocs-core 1.6.0 = the version DevHub renders with (pulls mkdocs + material)
+          pip install mkdocs-techdocs-core==1.6.0 pymdown-extensions
+
+      - name: Build
+        run: techdocs-cli generate --no-docker --verbose --source-dir . --output-dir ./site
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::913524945562:role/gh-bsv2-docs-zammad
+          aws-region: eu-central-1
+          role-session-name: techdocs-publish-${{ github.run_id }}
+
+      - name: Publish to DevHub
+        run: |
+          techdocs-cli publish \
+            --publisher-type awsS3 \
+            --storage-name agm-backstage-v2-techdocs \
+            --entity default/component/zammad \
+            --directory ./site
+
+      - name: Report
+        if: success()
+        run: echo "::notice::TechDocs published for zammad (DevHub → the zammad card → Docs)."
